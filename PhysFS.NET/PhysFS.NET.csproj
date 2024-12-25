@@ -9,14 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\physfs\build\physfs.vcxproj" />
+    <ProjectReference Include="..\physfs\build\physfs.vcxproj" >
+		<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		<OutputItemType>Content</OutputItemType>
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
   </ItemGroup>
-
-  <Target Name="CopyBinaries" AfterTargets="PreBuildEvent">
-    <ItemGroup>
-      <Binaries Include="$(SolutionDir)\physfs\build\$(Configuration)\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(Binaries)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
-  </Target>
 
 </Project>
