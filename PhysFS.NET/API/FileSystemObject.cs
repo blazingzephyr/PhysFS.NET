@@ -155,9 +155,50 @@ public record FileSystemObject : IDisposable
     /// </remarks>
     public void Flush() => PhysFS.Flush(this);
 
+    /// <summary>
+    /// Read bytes from the PhysicsFS file.
+    /// </summary>
+    /// <remarks>
+    /// The file must be opened for reading.
+    /// </remarks>
+    /// <returns>
+    /// Number of bytes read. This may be less than file length; this does not
+    /// signify an error, necessarily (a short read may mean EOF).
+    /// </returns>
+    public byte[] ReadBytes() => PhysFS.ReadBytes(this);
+
+    /// <summary>
+    /// Write data to the PhysicsFS file.
+    /// </summary>
+    /// <remarks>
+    /// Please note that you are limited to 63 bits (9223372036854775807 bytes),
+    /// so we can return a negative value on error. If length is greater than
+    /// 0x7FFFFFFFFFFFFFFF, this function will immediately fail. For systems
+    /// without a 64-bit datatype, you are limited to 31 bits (0x7FFFFFFF, or
+    /// 2147483647 bytes). We trust most things won't need to do multiple
+    /// gigabytes of i/o in one call anyhow, but why limit things?
+    /// </remarks>
+    /// <param name="bytes">
+    /// buffer of bytes to write to this file.
+    /// </param>
+    /// <returns>
+    /// number of bytes written. This may be less than (len); in the case
+    /// of an error, the system may try to write as many bytes as possible,
+    /// so an incomplete write might occur.
+    /// </returns>
+    public void WriteBytes(byte[] bytes) => PhysFS.WriteBytes(this, bytes);
+
+    /// <summary>
+    /// Close the PhysicsFS file.
+    /// </summary>
+    /// <remarks>
+    /// This call is capable of failing if the operating system was buffering
+    /// writes to the physical media, and, now forced to write those changes to
+    /// physical media, can not store the data for some reason.
+    /// </remarks>
     public void Dispose()
     {
-        physfs.PHYSFS_close(Handle);
+        PhysFS.CloseFile(this);
         GC.SuppressFinalize(this);
     }
 }

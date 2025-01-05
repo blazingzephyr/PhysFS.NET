@@ -87,3 +87,5 @@ public struct PHYSFS_Stat
     public PHYSFS_FileType filetype; /**< File? Directory? Symlink? */
     public int isreadonly;           /**< non-zero if read only, zero if writable. */
 }
+
+public delegate void UnmountCallback(IntPtr memory);

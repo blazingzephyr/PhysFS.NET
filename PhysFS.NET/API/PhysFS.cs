@@ -1,6 +1,4 @@
 ﻿
-using System.IO;
-
 namespace Icculus.PhysFS.NET;
 
 /// <summary>
@@ -125,7 +123,7 @@ public static class PhysFS
     /// <exception cref="InvalidOperationException"/>
     public static void Init(string? arg = null)
     {
-        Assert("Initializing PhysFS", !physfs.PHYSFS_init(arg), false);
+        Assert("Initializing PhysFS", !physfs.PHYSFS_init(arg));
     }
 
     /// <summary>
@@ -155,7 +153,7 @@ public static class PhysFS
     /// <exception cref="InvalidOperationException"/>
     public static void Deinit()
     {
-        Assert("Deinitializing PhysFS", !physfs.PHYSFS_deinit(), false);
+        Assert("Deinitializing PhysFS", !physfs.PHYSFS_deinit());
     }
 
     /// <summary>
@@ -173,7 +171,7 @@ public static class PhysFS
     public static IEnumerable<ArchiveInfo> GetSupportedArchiveTypes()
     {
         IntPtr archives = physfs.PHYSFS_supportedArchiveTypes();
-        Assert($"Getting supported archive types", archives == IntPtr.Zero, false);
+        Assert($"Getting supported archive types", archives == IntPtr.Zero);
 
         while (true)
         {
@@ -217,7 +215,7 @@ public static class PhysFS
     {
         IntPtr ptr = physfs.PHYSFS_getCdRomDirs();
         IntPtr dirs = ptr;
-        Assert($"Getting CD-ROM directories", dirs == IntPtr.Zero, false);
+        Assert($"Getting CD-ROM directories", dirs == IntPtr.Zero);
 
         while (true)
         {
@@ -254,8 +252,7 @@ public static class PhysFS
     {
         Assert(
             $"Setting writing directory to {{0}}{dir}{{1}}",
-            !physfs.PHYSFS_setWriteDir(dir),
-            false
+            !physfs.PHYSFS_setWriteDir(dir)
         );
     }
 
@@ -274,7 +271,7 @@ public static class PhysFS
     public static IEnumerable<string> GetSearchPaths()
     {
         IntPtr paths = physfs.PHYSFS_getSearchPath();
-        Assert("Getting available search paths", paths == IntPtr.Zero, false);
+        Assert("Getting available search paths", paths == IntPtr.Zero);
 
         while (true)
         {
@@ -358,7 +355,7 @@ public static class PhysFS
         Assert(
             $"Setting default config for {{0}}{organization}{{1}}, {{0}}{appName}{{1}} " +
             $"with CD-ROMS support set to {{0}}{includeCdRoms}{{1}}, " +
-            $"default archive extension set to {{0}}{archiveExt}{{1}}"+
+            $"default archive extension set to {{0}}{archiveExt}{{1}} "+
             $"and prepend archives set to {{0}}{prependArchives}{{1}}",
             !physfs.PHYSFS_setSaneConfig(
                 organization,
@@ -366,8 +363,7 @@ public static class PhysFS
                 archiveExt,
                 includeCdRoms,
                 prependArchives
-            ),
-            false
+            )
         );
     }
 
@@ -397,8 +393,7 @@ public static class PhysFS
     {
         Assert(
             $"Creating {{0}}{directoryName}{{1}}",
-            !physfs.PHYSFS_mkdir(directoryName),
-            false
+            !physfs.PHYSFS_mkdir(directoryName)
         );
     }
 
@@ -436,8 +431,7 @@ public static class PhysFS
     {
         Assert(
             $"Deleting {{0}}{fileName}{{1}}",
-            !physfs.PHYSFS_delete(fileName),
-            false
+            !physfs.PHYSFS_delete(fileName)
         );
     }
 
@@ -474,8 +468,7 @@ public static class PhysFS
         string dir = physfs.PHYSFS_getRealDir(fileName);
         Assert(
             $"Directory for {{0}}{fileName}{{1}}: {{0}}{dir}{{1}}",
-            dir == null,
-            false
+            dir == null
         );
 
         return dir!;
@@ -576,14 +569,13 @@ public static class PhysFS
 
         Assert(
             $"Opening {{0}}{fileName}{{1}} for {{0}}{mode}{{1}}",
-            handle.IsInvalid,
-            false
+            handle.IsInvalid
         );
 
         return new FileSystemObject
         {
             FullName = fileName,
-            Stats = null,
+            Stats = GetStatsFor(fileName),
             Access = mode,
             Handle = handle
         };
@@ -607,8 +599,7 @@ public static class PhysFS
     {
         Assert(
             $"Closing {{0}}{file.FullName}{{1}}",
-            !physfs.PHYSFS_close(file.Handle),
-            false
+            !physfs.PHYSFS_close(file.Handle)
         );
     }
 
@@ -648,8 +639,7 @@ public static class PhysFS
         long position = physfs.PHYSFS_tell(file.Handle);
         Assert(
             $"Attempting to determine current position within {file.FullName}.",
-            position == -1,
-            false
+            position == -1
         );
 
         return position;
@@ -676,8 +666,7 @@ public static class PhysFS
     {
         Assert(
             $"Seeking to {offset} within {file.FullName}",
-            !physfs.PHYSFS_seek(file.Handle, offset),
-            false
+            !physfs.PHYSFS_seek(file.Handle, offset)
         );
     }
 
@@ -753,8 +742,7 @@ public static class PhysFS
     {
         Assert(
             $"Setting the buffer size of {{0}}{file}{{1}} to {{0}}{size}{{1}}",
-            !physfs.PHYSFS_setBuffer(file.Handle, size),
-            false
+            !physfs.PHYSFS_setBuffer(file.Handle, size)
         );
     }
 
@@ -779,14 +767,9 @@ public static class PhysFS
     {
         Assert(
             $"Flushing {{0}}{file}{{1}}",
-            !physfs.PHYSFS_flush(file.Handle),
-            false
+            !physfs.PHYSFS_flush(file.Handle)
         );
     }
-
-    //
-
-    //PHYSFS_DECL int PHYSFS_setAllocator(const PHYSFS_Allocator *allocator);
 
     /// <summary>
     /// Add an archive or directory to the search path.
@@ -822,12 +805,22 @@ public static class PhysFS
     /// <seealso cref="Unmount(string, bool)"/>
     /// <seealso cref="GetSearchPaths"/>
     /// <seealso cref="GetSearchPaths"/>
-    /// <seealso cref="GetMountPoint(string)"/>
+    /// <seealso cref="GetMountPoint(string, bool)"/>
     /// </remarks>
-    /// <param name="directory"></param>
-    /// <param name="isRelative"></param>
-    /// <param name="mountTo"></param>
-    /// <param name="append"></param>
+    /// <param name="directory">
+    /// directory or archive to add to the path, in
+    /// </param>
+    /// <param name="isRelative">
+    /// true if <paramref name="directory"/> is a relative path, false if full.
+    /// </param>
+    /// <param name="mountTo">
+    /// Location in the interpolated tree that this archive
+    /// will be "mounted", in platform-independent notation.
+    /// String.Empty is equivalent to "/".
+    /// </param>
+    /// <param name="append">
+    /// true to append to search path, false to prepend.
+    /// </param>
     public static void Mount(
         string directory,
         bool isRelative = true,
@@ -837,17 +830,146 @@ public static class PhysFS
         if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
         Assert(
             $"Adding {{0}}{directory}{{1}} to search paths to {{0}}{mountTo}{{1}}",
-            !physfs.PHYSFS_mount(directory, mountTo, append),
-            false
+            !physfs.PHYSFS_mount(directory, mountTo, append)
         );
     }
 
     /// <summary>
-    /// 
+    /// Add an archive, contained in <seealso cref="FileSystemObject"/>,
+    /// to the search path.
     /// </summary>
-    /// <param name="directory"></param>
-    /// <param name="isRelative"></param>
-    /// <returns></returns>
+    /// <remarks>
+    /// This function operates just like <seealso cref="Mount(string, bool, string, bool)"/>,
+    /// but takes a <seealso cref="FileSystemObject"/> instead of a pathname.<br/><br/>
+    /// 
+    /// This handle contains all the data of the
+    /// archive, and is used instead of a real file in the physical filesystem.
+    /// The <seealso cref="FileSystemObject"/> may be backed by a real
+    /// file in the physical filesystem, but isn't necessarily.
+    /// The most popular use for this is likely to mount
+    /// archives stored inside other archives.<br/><br/>
+    ///
+    /// <paramref name="directory"/> must be a unique string to identify this archive.
+    /// It is used to optimize archiver selection (if you name it XXXXX.zip, we might try
+    /// the ZIP archiver first, for example, or directly choose an archiver that
+    /// can only trust the data is valid by filename extension). It doesn't
+    /// need to refer to a real file at all. If the filename extension isn't
+    /// helpful, the system will try every archiver until one works or none
+    /// of them do. This filename must be unique, as the system won't allow you
+    /// to have two archives with the same name.<br/><br/>
+    ///
+    /// <paramref name="file"/> must remain until the archive is unmounted.
+    /// When the archive is unmounted, the system will call
+    /// <seealso cref="CloseFile(FileSystemObject)"/>.<br/><br/>
+    /// 
+    /// If you need this
+    /// handle to survive, you will have to wrap this in a PHYSFS_Io and use
+    /// PHYSFS_mountIo() instead.
+    /// </remarks>
+    /// <param name="file">
+    /// The <seealso cref="FileSystemObject"/> containing archive data.
+    /// </param>
+    /// <param name="directory">
+    /// Filename that can represent this stream.
+    /// </param>
+    /// <param name="isRelative">
+    /// true if <paramref name="directory"/> is a relative path, false if full.
+    /// </param>
+    /// <param name="mountTo">
+    /// Location in the interpolated tree that this archive
+    /// will be "mounted", in platform-independent notation.
+    /// String.Empty is equivalent to "/".
+    /// </param>
+    /// <param name="append">
+    /// true to append to search path, false to prepend.
+    /// </param>
+    public static void Mount(
+        FileSystemObject file,
+        string directory,
+        bool isRelative = true,
+        string mountTo = "/",
+        bool append = true)
+    {
+        if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
+        Assert(
+            $"Adding {{0}}{file.FullName}{{1}} to search paths to {{0}}{mountTo}{{1}}",
+            !physfs.PHYSFS_mountHandle(file.Handle, directory, mountTo, append)
+        );
+    }
+
+    /// <summary>
+    /// Add an archive, contained in a memory buffer, to the search path.
+    /// </summary>
+    /// <param name="buffer">
+    /// buffer of bytes to mount.
+    /// </param>
+    /// <param name="onUnmount">
+    /// A callback that triggers upon unmount. Can be null.
+    /// </param>
+    /// <param name="directory">
+    /// Filename that can represent this stream.
+    /// </param>
+    /// <param name="isRelative">
+    /// true if <paramref name="directory"/> is a relative path, false if full.
+    /// </param>
+    /// <param name="mountTo">
+    /// Location in the interpolated tree that this archive
+    /// will be "mounted", in platform-independent notation.
+    /// </param>
+    /// <param name="append">
+    /// true to append to search path, false to prepend.
+    /// </param>
+    public static void Mount(
+        byte[] buffer,
+        string directory,
+        bool isRelative = true,
+        string mountTo = "/",
+        bool append = true,
+        Action<IntPtr>? onUnmount = null)
+    {
+        GCHandle pinned = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+        IntPtr address = pinned.AddrOfPinnedObject();
+
+        if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
+        Assert(
+            $"Adding {{0}}{buffer}{{1}} buffer of {{0}}{buffer.LongLength}{{1}} " +
+            $"to search paths to {{0}}{mountTo}{{1}}",
+            !physfs.PHYSFS_mountMemory(
+                address,
+                (ulong)buffer.LongLength,
+                buf => onUnmount?.Invoke(buf),
+                directory,
+                mountTo,
+                append
+            )
+        );
+
+        pinned.Free();
+    }
+
+    /// <summary>
+    /// Determine a mounted archive's mountpoint.
+    /// </summary>
+    /// <remarks>
+    /// You give this function the name of an archive or dir you successfully
+    /// added to the search path, and it reports the location in the interpolated
+    /// tree where it is mounted. Files mounted with a "/" mountpoint or through
+    /// <seealso cref="Mount(string, bool, string, bool)"/>
+    /// will report "/". The return value is valid until the archive is
+    /// removed from the search path.
+    /// </remarks>
+    /// <param name="directory">
+    /// directory or archive previously added to the path, in
+    /// platform-dependent notation. This must match the string
+    /// used when adding, even if your string would also reference
+    /// the same file with a different string of characters.
+    /// </param>
+    /// <param name="isRelative">
+    /// true if <paramref name="directory"/> is a relative path, false if full.
+    /// </param>
+    /// <returns>
+    /// string of mount point if added to path
+    /// </returns>
     public static string GetMountPoint(string directory, bool isRelative = true)
     {
         if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
@@ -855,26 +977,58 @@ public static class PhysFS
 
         Assert(
             $"Getting the mount point of {{0}}{directory}{{1}}",
-            mountPoint == null,
-            false
+            mountPoint == null
         );
 
         return mountPoint!;
     }
 
     /// <summary>
-    /// 
+    /// Get a file listing of a search path's directory,
+    /// using an application-defined callback, with errors reported.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="directory"></param>
-    /// <param name="a"></param>
-    /// <param name="data"></param>
-    public static void Enumerate<T>(string directory, EnumerateCallback<T> a, ref T data)
+    /// <remarks>
+    /// Items sent to the callback are not guaranteed to be in any order whatsoever.
+    /// There is no sorting done at this level, and if you need that, you should
+    /// probably use <seealso cref="EnumerateFiles(string)"/> instead, which guarantees
+    /// alphabetical sorting. This form reports whatever is discovered in each
+    /// archive before moving on to the next. Even within one archive, we can't
+    /// guarantee what order it will discover data. <em>Any sorting you find in
+    /// these callbacks is just pure luck. Do not rely on it.</em> As this walks
+    /// the entire list of archives, you may receive duplicate filenames.<br/><br/>
+    /// 
+    /// This API and the callbacks themselves are capable of reporting errors.
+    /// Prior to this API, callbacks had to accept every enumerated item, even if
+    /// they were only looking for a specific thing and wanted to stop after that,
+    /// or had a serious error and couldn't alert anyone. Furthermore, if
+    /// PhysicsFS itself had a problem (disk error or whatnot), it couldn't report
+    /// it to the calling app, it would just have to skip items or stop
+    /// enumerating outright, and the caller wouldn't know it had lost some data
+    /// along the way.<br/><br/>
+    /// 
+    /// Now the caller can be sure it got a complete data set, and its callback has
+    /// control if it wants enumeration to stop early. See the documentation for
+    /// <seealso cref="EnumerateCallback{T}"/> for details on how your callback should behave.
+    /// </remarks>
+    /// <typeparam name="T">
+    /// Type of <paramref name="data"/> passed to the
+    /// <paramref name="callback"/>.
+    /// </typeparam>
+    /// <param name="directory">
+    /// Directory, in platform-independent notation, to enumerate.
+    /// </param>
+    /// <param name="callback">
+    /// Callback function to notify about search path elements.
+    /// </param>
+    /// <param name="data">
+    /// Application-defined data passed to callback.
+    /// </param>
+    public static void Enumerate<T>(string directory, EnumerateCallback<T> callback, ref T data)
     {
         unsafe PHYSFS_EnumerateCallbackResult Callback(IntPtr data, string origdir, string fname)
         {
             ref T str = ref Unsafe.AsRef<T>(data.ToPointer());
-            EnumerateCallbackResult result = a(ref str, origdir, fname);
+            EnumerateCallbackResult result = callback(ref str, origdir, fname);
             return (PHYSFS_EnumerateCallbackResult)result;
         }
         unsafe
@@ -883,78 +1037,86 @@ public static class PhysFS
             IntPtr handle = new IntPtr(targetRef);
             Assert(
                 $"Enumerating files in {directory}",
-                !physfs.PHYSFS_enumerate(directory, Callback, handle),
-                false
+                !physfs.PHYSFS_enumerate(directory, Callback, handle)
             );
         }
     }
 
     /// <summary>
-    /// 
+    /// Remove a directory or archive from the search path.
     /// </summary>
-    /// <param name="directory"></param>
-    /// <param name="isRelative"></param>
+    /// <remarks>
+    /// This must be a (case-sensitive) match to a dir or archive already in the
+    /// search path, specified in platform-dependent notation.<br/><br/>
+    /// 
+    /// This call will fail (and fail to remove from the path) if the element still
+    /// has files open in it.
+    /// </remarks>
+    /// <param name="directory">
+    /// Dir/archive to remove.
+    /// </param>
+    /// <param name="isRelative">
+    /// true if <paramref name="directory"/> is a relative path, false if full.
+    /// </param>
     public static void Unmount(string directory, bool isRelative = true)
     {
         if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
         Assert(
             $"Removing {{0}}{directory}{{1}} from search paths",
-            !physfs.PHYSFS_unmount(directory),
-            false
+            !physfs.PHYSFS_unmount(directory)
         );
     }
-
-
-
-
-
-
 
     /// <summary>
-    /// 
+    /// Get various information about a directory or a file.
     /// </summary>
-    /// <param name="orgName"></param>
-    /// <param name="appName"></param>
-    /// <returns></returns>
-    public static string GetPrefDirectory(string orgName, string appName)
+    /// <remarks>
+    /// Obtain various information about a file or directory from the meta data.<br/><br/>
+    /// 
+    /// This function will never follow symbolic links. If you haven't enabled
+    /// symlinks by setting <seealso cref="AllowSymbolicLinks"/>, stat'ing a symlink will be
+    /// treated like stat'ing a non-existant file. If symlinks are enabled,
+    /// stat'ing a symlink will give you information on the link itself and not
+    /// what it points to.
+    /// </remarks>
+    /// <param name="fileName">
+    /// Filename to check, in platform-indepedent notation.
+    /// </param>
+    /// <returns>
+    /// Structure filled with data about <paramref name="fileName"/>.
+    /// </returns>
+    public static FileStat GetStatsFor(string fileName)
     {
-        string pref = physfs.PHYSFS_getPrefDir(orgName, appName);
         Assert(
-            $"Preferences directory for {{0}}[{orgName}]{{1}}," +
-            $"{{0}}[{appName}]{{1}}: {{0}}{pref}{{1}}",
-            pref == null,
-            false
+            $"Getting the file statistics of {{0}}{fileName}{{1}}",
+            !physfs.PHYSFS_stat(fileName, out PHYSFS_Stat stat)
         );
 
-        return pref!;
+        DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).ToLocalTime();
+        return new FileStat
+        {
+            Length = stat.filesize,
+            LastWriteTime = dateTime.AddSeconds(stat.modtime),
+            CreationTime = dateTime.AddSeconds(stat.createtime),
+            LastAccessTime = dateTime.AddSeconds(stat.accesstime),
+            Type = (FileType)stat.filetype,
+            IsReadOnly = stat.isreadonly == 1
+        };
     }
 
-
-
-
-    private static Version GetLinkedVersion()
-    {
-        physfs.PHYSFS_getLinkedVersion(out PHYSFS_Version version);
-        return new Version(version.major, version.minor, version.patch);
-    }
-
-    //    public static void RemoveSearchPath(string directory, bool isRelative = true)
-    //    {
-    //        if (isRelative) directory = BasePath + DirSeparator + directory;
-    //        Log(!physfs.PHYSFS_unmount(directory), false, $"Removing {directory} from search paths");
-    //    }
-
-    //    public static FileStats GetStatsFor(string fileName)
-    //    {
-    //        Log(!physfs.PHYSFS_stat(fileName, out FileStats stat), false, $"Getting stats for {fileName}");
-    //        return stat;
-    //    }
-
-    //    public static void CloseFile(FileSystemObject file)
-    //    {
-    //        Log(!physfs.PHYSFS_close(file.Handle), false, $"Closing {file.Name}");
-    //    }
-
+    /// <summary>
+    /// Read bytes from a PhysicsFS file.
+    /// </summary>
+    /// <remarks>
+    /// The file must be opened for reading.
+    /// </remarks>
+    /// <param name="file">
+    /// Handle returned from <seealso cref="OpenFile(string, FileSystemObjectAccess)"/>
+    /// </param>
+    /// <returns>
+    /// Number of bytes read. This may be less than file length; this does not
+    /// signify an error, necessarily (a short read may mean EOF).
+    /// </returns>
     public static byte[] ReadBytes(FileSystemObject file)
     {
         byte[] buffer = new byte[file.Stats.Length];
@@ -964,7 +1126,7 @@ public static class PhysFS
 
         long read = physfs.PHYSFS_readBytes(file.Handle, address, len);
         Assert(
-            $"Reading {file.FullName}",
+            $"Reading {read} bytes from {file.FullName}",
             read == -1,
             read < file.Stats.Length
         );
@@ -973,58 +1135,175 @@ public static class PhysFS
         return buffer;
     }
 
+    /// <summary>
+    /// Write data to a PhysicsFS file.
+    /// </summary>
+    /// <remarks>
+    /// Please note that you are limited to 63 bits (9223372036854775807 bytes),
+    /// so we can return a negative value on error. If length is greater than
+    /// 0x7FFFFFFFFFFFFFFF, this function will immediately fail. For systems
+    /// without a 64-bit datatype, you are limited to 31 bits (0x7FFFFFFF, or
+    /// 2147483647 bytes). We trust most things won't need to do multiple
+    /// gigabytes of i/o in one call anyhow, but why limit things?
+    /// </remarks>
+    /// <param name="file">
+    /// handle from <seealso cref="OpenFile(string, FileSystemObjectAccess)"/>
+    /// </param>
+    /// <param name="bytes">
+    /// buffer of bytes to write to <paramref name="file"/>.
+    /// </param>
+    /// <returns>
+    /// number of bytes written. This may be less than (len); in the case
+    /// of an error, the system may try to write as many bytes as possible,
+    /// so an incomplete write might occur.
+    /// </returns>
     public static long WriteBytes(FileSystemObject file, byte[] bytes)
     {
         GCHandle pinned = GCHandle.Alloc(bytes, GCHandleType.Pinned);
         IntPtr address = pinned.AddrOfPinnedObject();
 
-        long write = physfs.PHYSFS_writeBytes(file.Handle, address, (ulong)bytes.Length);
+        long write = physfs.PHYSFS_writeBytes(
+            file.Handle,
+            address,
+            (ulong)bytes.LongLength
+        );
+
         Assert(
-            $"Writing {bytes.Length} bytes to {file.FullName}",
+            $"Writing {bytes.LongLength} bytes to {file.FullName}",
             write == -1,
-            write < bytes.Length
+            write < bytes.LongLength
         );
 
         pinned.Free();
         return write;
     }
 
+    /// <summary>
+    /// Get the user-and-app-specific path where files can be written.
+    /// </summary>
+    /// <remarks>
+    /// Helper function.<br/><br/>
+    ///
+    /// Get the "pref dir". This is meant to be where users can write personal
+    /// files (preferences and save games, etc) that are specific to your
+    /// application. This directory is unique per user, per application.<br/><br/>
+    ///
+    /// This function will decide the appropriate location in the native filesystem,
+    /// create the directory if necessary, and return a string in
+    /// platform-dependent notation, suitable for passing to
+    /// <seealso cref="SetWriteDirectory(string)"/><br/><br/>
+    ///
+    /// On Windows, this might look like:<br/>
+    /// "C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name"<br/><br/>
+    ///
+    /// On Linux, this might look like:<br/>
+    /// "/home/bob/.local/share/My Program Name"<br/><br/>
+    ///
+    /// On Mac OS X, this might look like:<br/>
+    /// "/Users/bob/Library/Application Support/My Program Name"<br/><br/>
+    ///
+    /// You should probably use the pref dir for your write dir, and also put it
+    /// near the beginning of your search path. This finds the correct location
+    /// for whatever platform, which not only changes between operating systems,
+    /// but also versions of the same operating system.<br/><br/>
+    ///
+    /// You specify the name of your organization (if it's not a real organization,
+    /// your name or an Internet domain you own might do) and the name of your
+    /// application. These should be proper names.<br/><br/>
+    ///
+    /// Both the <paramref name="orgName"/> and <paramref name="appName"/>
+    /// strings may become part of a directory name, so
+    /// please follow these rules:<br/>
+    /// - Try to use the same org string (including case-sensitivity) for
+    ///   all your applications that use this function.<br/>
+    /// - Always use a unique app string for each one, and make sure it never
+    ///   changes for an app once you've decided on it.<br/>
+    /// - Unicode characters are legal, as long as it's UTF-8 encoded, but...
+    /// - ...only use letters, numbers, and spaces. Avoid punctuation like
+    ///   "Game Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.<br/><br/>
+    ///
+    /// The pointer returned by this function remains valid until you call this
+    /// function again, or call <seealso cref="Deinit"/>. This is not necessarily a fast
+    /// call, though, so you should call this once at startup and copy the string
+    /// if you need it.<br/><br/>
+    ///
+    /// You should assume the path returned by this function is the only safe
+    /// place to write files (and <seealso cref="BasePath"/>,
+    /// while they might be writable, or even parents of the returned path, aren't
+    /// where you should be writing things).<br/><br/>
+    /// </remarks>
+    /// <param name="orgName">
+    /// The name of your organization.
+    /// </param>
+    /// <param name="appName">
+    /// The name of your application.
+    /// </param>
+    /// <returns>
+    /// string of user dir in platform-dependent notation
+    /// </returns>
+    public static string GetPrefDirectory(string orgName, string appName)
+    {
+        string pref = physfs.PHYSFS_getPrefDir(orgName, appName);
+        Assert(
+            $"Preferences directory for {{0}}[{orgName}]{{1}}," +
+            $"{{0}}[{appName}]{{1}}: {{0}}{pref}{{1}}",
+            pref == null
+        );
 
+        return pref!;
+    }
 
+    /// <summary>
+    /// Make a subdirectory of an archive its root directory.
+    /// </summary>
+    /// <remarks>
+    /// This lets you narrow down the accessible files in a specific archive.
+    /// For example, if you have x.zip with a file in y/z.txt, mounted to /a,
+    /// if you call <c>PhysFS.SetRootDirectory("x.zip", "/y")</c>,
+    /// then the call <c>PhysFS.OpenFile("/a/z.txt", FileSystemObjectAccess.Read)</c>
+    /// will succeed.<br/><br/>
+    /// 
+    /// You can change an archive's root at any time, altering the interpolated
+    /// file tree (depending on where paths shift, a different archive may be
+    /// providing various files). If you set the root to NULL or "/", the
+    /// archive will be treated as if no special root was set (as if the archive
+    /// was just mounted normally).<br/><br/>
+    ///
+    /// Changing the root only affects future operations on pathnames; a file
+    /// that was opened from a path that changed due to a setRoot will not be
+    /// affected.<br/><br/>
+    ///
+    /// Setting a new root is not limited to archives in the search path; you may
+    /// set one on the write dir, too, which might be useful if you have files
+    /// open for write and thus can't change the write dir at the moment.<br/><br/>
+    ///
+    /// It is not an error to set a subdirectory that does not exist to be the
+    /// root of an archive; however, no files will be visible in this case. If
+    /// the missing directories end up getting created (a mkdir to the physical
+    /// filesystem, etc) then this will be reflected in the interpolated tree.
+    /// </remarks>
+    /// <param name="archive">
+    /// dir/archive on which to change root.
+    /// </param>
+    /// <param name="subdirectory">
+    /// new subdirectory to make the root of this archive.
+    /// </param>
+    public static void SetRootDirectory(string archive, string subdirectory = "/")
+    {
+        Assert(
+            $"Setting {{0}}{subdirectory}{{1}} as {{0}}/{{1}}" +
+            $"for {{0}}{{archive}}{{1}}",
+            !physfs.PHYSFS_setRoot(archive, subdirectory)
+        );
+    }
 
-    //    public static void Enumerate<T>(string directory, EnumerateCallback<T> a, ref T data)
-    //    {
-    //        unsafe PHYSFS_EnumerateCallbackResult Callback(IntPtr data, string origdir, string fname)
-    //        {
-    //            ref T str = ref Unsafe.AsRef<T>(data.ToPointer());
-    //            EnumerateCallbackResult result = a(ref str, origdir, fname);
-    //            return (PHYSFS_EnumerateCallbackResult)result;
-    //        }
-    //        unsafe
-    //        {
-    //            void* targetRef = Unsafe.AsPointer(ref data);
-    //            IntPtr handle = new IntPtr(targetRef);
+    private static Version GetLinkedVersion()
+    {
+        physfs.PHYSFS_getLinkedVersion(out PHYSFS_Version version);
+        return new Version(version.major, version.minor, version.patch);
+    }
 
-    //            Log(!physfs.PHYSFS_enumerate(directory, Callback, handle), false, "AA");
-    //        }
-    //        //unsafe EnumerateCallbackResult Callback(IntPtr r, string s, string f)
-    //        //{
-    //        //    return a(ref Unsafe.AsRef<T>(r.ToPointer()), s, f);
-    //        //}
-
-    //        //unsafe
-    //        //{
-    //        //    void* targetRef = Unsafe.AsPointer(ref data);
-    //        //    IntPtr handle = new IntPtr(targetRef);
-    //        //    physfs.PHYSFS_enumerate(directory, Callback, handle);
-    //        //}
-    //    }
-
-    private static void Assert(
-        string message,
-        bool failExpression,
-        bool warnExpression,
-        params object[] args)
+    private static void Assert(string message, bool failExpression, bool warnExpression = false)
     {
         (PHYSFS_ErrorCode, string) LogError()
         {
@@ -1032,9 +1311,11 @@ public static class PhysFS
             string err = physfs.PHYSFS_getErrorByCode(code);
 
         #if DEBUG
-            (string tag, string color) = failExpression ? ("FAIL", FG_LRED) : ("WARN", FG_LYELLOW);
+            (string tag, string color) = failExpression ?
+                ("FAIL", FG_LRED) : ("WARN", FG_LYELLOW);
+
             string output = $"{{0}}{tag}{{1}} {message}: {{0}}{err}{{1}}";
-            Log(color, output, REVERSE, NOREVERSE, args);
+            Log(color, output, REVERSE, NOREVERSE);
         #endif
 
             return (code, err);
