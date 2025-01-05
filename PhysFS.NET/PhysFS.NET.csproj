@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\physfs\build\physfs.vcxproj" >
+    <ProjectReference Include="..\physfs\build\physfs.vcxproj">
 		<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 		<OutputItemType>Content</OutputItemType>
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
