@@ -162,10 +162,24 @@ public record FileSystemObject : IDisposable
     /// The file must be opened for reading.
     /// </remarks>
     /// <returns>
-    /// Number of bytes read. This may be less than file length; this does not
+    /// The bytes read from file. Throws a warning if the number of bytes read
+    /// is less than file length; this does not
     /// signify an error, necessarily (a short read may mean EOF).
     /// </returns>
     public byte[] ReadBytes() => PhysFS.ReadBytes(this);
+
+    /// <summary>
+    /// Read contents of the PhysicsFS file to a stream.
+    /// </summary>
+    /// <remarks>
+    /// The file must be opened for reading.
+    /// </remarks>
+    /// <returns>
+    /// An unmanaged stream. Throws a warning if the number of bytes read
+    /// is less than file length; this does not
+    /// signify an error, necessarily (a short read may mean EOF).
+    /// </returns>
+    public UnmanagedMemoryStream ReadToStream() => PhysFS.ReadToStream(this);
 
     /// <summary>
     /// Write data to the PhysicsFS file.

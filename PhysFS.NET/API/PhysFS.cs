@@ -1114,25 +1114,62 @@ public static class PhysFS
     /// Handle returned from <seealso cref="OpenFile(string, FileSystemObjectAccess)"/>
     /// </param>
     /// <returns>
-    /// Number of bytes read. This may be less than file length; this does not
+    /// The bytes read from file. Throws a warning if the number of bytes read
+    /// is less than file length; this does not
     /// signify an error, necessarily (a short read may mean EOF).
     /// </returns>
     public static byte[] ReadBytes(FileSystemObject file)
     {
         byte[] buffer = new byte[file.Stats.Length];
         GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-        IntPtr address = handle.AddrOfPinnedObject();
-        ulong len = (ulong)file.Stats.Length;
 
-        long read = physfs.PHYSFS_readBytes(file.Handle, address, len);
+        try
+        {
+            IntPtr address = handle.AddrOfPinnedObject();
+            ulong len = (ulong)file.Stats.Length;
+
+            long read = physfs.PHYSFS_readBytes(file.Handle, address, len);
+            Assert(
+                $"Reading {read} bytes from {file.FullName}",
+                read == -1,
+                read < file.Stats.Length
+            );
+        }
+        finally
+        {
+            handle.Free();
+        }
+
+        return buffer;
+    }
+
+    /// <summary>
+    /// Reads a PhysicsFS file to a stream.
+    /// </summary>
+    /// <remarks>
+    /// The file must be opened for reading.
+    /// </remarks>
+    /// <param name="file">
+    /// Handle returned from <seealso cref="OpenFile(string, FileSystemObjectAccess)"/>
+    /// </param>
+    /// <returns>
+    /// An unmanaged stream. Throws a warning if the number of bytes read
+    /// is less than file length; this does not
+    /// signify an error, necessarily (a short read may mean EOF).
+    /// </returns>
+    public static UnmanagedMemoryStream ReadToStream(FileSystemObject file)
+    {
+        SafeHGlobalBuffer buffer = new SafeHGlobalBuffer(file.Stats.Length);
+        long read = physfs.PHYSFS_readBytes(file.Handle, buffer.DangerousGetHandle(), file.Length);
+
         Assert(
             $"Reading {read} bytes from {file.FullName}",
             read == -1,
             read < file.Stats.Length
         );
 
-        handle.Free();
-        return buffer;
+        UnmanagedMemoryStream stream = new UnmanagedMemoryStream(buffer, 0, read, FileAccess.Read);
+        return stream;
     }
 
     /// <summary>

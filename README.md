@@ -44,6 +44,11 @@ byte[] fileContents = file.ReadBytes();
 // Do whatever you need to with the contents.
 Console.WriteLine(fileContents.Length);
 
+// Alternatively, you can use file.ReadToStream() or PhysFs.ReadToStream(file).
+// UnmanagedMemoryStream stream = file.ReadToStream();
+// *process the stream...*
+// stream.Close();
+
 // Equivalent to PhysFS.CloseFile(file).
 file.Dispose();
 
