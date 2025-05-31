@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+
 namespace Icculus.PhysFS.NET;
 
 /// <summary>
@@ -828,7 +830,7 @@ public static class PhysFS
         string mountTo = "/",
         bool append = true)
     {
-        if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
+        directory = GetFullDirectory(directory, isRelative);
         Assert(
             $"Adding {{0}}{directory}{{1}} to search paths to {{0}}{mountTo}{{1}}",
             !physfs.PHYSFS_mount(directory, mountTo, append)
@@ -891,7 +893,7 @@ public static class PhysFS
         string mountTo = "/",
         bool append = true)
     {
-        if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
+        directory = GetFullDirectory(directory, isRelative);
         Assert(
             $"Adding {{0}}{file.FullName}{{1}} to search paths to {{0}}{mountTo}{{1}}",
             !physfs.PHYSFS_mountHandle(file.Handle, directory, mountTo, append)
@@ -931,7 +933,7 @@ public static class PhysFS
         GCHandle pinned = GCHandle.Alloc(buffer, GCHandleType.Pinned);
         IntPtr address = pinned.AddrOfPinnedObject();
 
-        if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
+        directory = GetFullDirectory(directory, isRelative);
         Assert(
             $"Adding {{0}}{buffer}{{1}} buffer of {{0}}{buffer.LongLength}{{1}} " +
             $"to search paths to {{0}}{mountTo}{{1}}",
@@ -973,7 +975,7 @@ public static class PhysFS
     /// </returns>
     public static string GetMountPoint(string directory, bool isRelative = true)
     {
-        if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
+        directory = GetFullDirectory(directory, isRelative);
         string? mountPoint = physfs.PHYSFS_getMountPoint(directory);
 
         Assert(
@@ -1061,7 +1063,7 @@ public static class PhysFS
     /// </param>
     public static void Unmount(string directory, bool isRelative = true)
     {
-        if (isRelative) directory = string.Join(DirSeparator, BasePath, directory);
+        directory = GetFullDirectory(directory, isRelative);
         Assert(
             $"Removing {{0}}{directory}{{1}} from search paths",
             !physfs.PHYSFS_unmount(directory)
@@ -1339,6 +1341,13 @@ public static class PhysFS
     {
         physfs.PHYSFS_getLinkedVersion(out PHYSFS_Version version);
         return new Version(version.major, version.minor, version.patch);
+    }
+
+    private static string GetFullDirectory(string directory, bool isRelative)
+    {
+        if (!isRelative) return directory;
+        if (string.IsNullOrEmpty(directory)) return BasePath;
+        return string.Join(DirSeparator, BasePath, directory);
     }
 
     private static void Assert(string message, bool failExpression, bool warnExpression = false)
