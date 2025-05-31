@@ -213,20 +213,20 @@ public static class PhysFS
     /// <exception cref="OutOfMemoryException"/>
     public static IEnumerable<string> GetCdRomDirs()
     {
-        IntPtr ptr = physfs.PHYSFS_getCdRomDirs();
-        IntPtr dirs = ptr;
+        IntPtr dirs = physfs.PHYSFS_getCdRomDirs();
+        IntPtr i = dirs;
         Assert($"Getting CD-ROM directories", dirs == IntPtr.Zero);
 
         while (true)
         {
-            IntPtr dir = Marshal.ReadIntPtr(dirs);
+            IntPtr dir = Marshal.ReadIntPtr(i);
             if (dir == IntPtr.Zero) break;
 
             yield return Marshal.PtrToStringUTF8(dir)!;
-            dirs += IntPtr.Size;
+            i += IntPtr.Size;
         }
 
-        physfs.PHYSFS_freeList(ptr);
+        physfs.PHYSFS_freeList(dirs);
     }
 
     /// <summary>
@@ -271,15 +271,16 @@ public static class PhysFS
     public static IEnumerable<string> GetSearchPaths()
     {
         IntPtr paths = physfs.PHYSFS_getSearchPath();
+        IntPtr i = paths;
         Assert("Getting available search paths", paths == IntPtr.Zero);
 
         while (true)
         {
-            IntPtr path = Marshal.ReadIntPtr(paths);
+            IntPtr path = Marshal.ReadIntPtr(i);
             if (path == IntPtr.Zero) break;
 
             yield return Marshal.PtrToStringUTF8(path)!;
-            paths += IntPtr.Size;
+            i += IntPtr.Size;
         }
 
         physfs.PHYSFS_freeList(paths);
@@ -496,20 +497,20 @@ public static class PhysFS
     /// <exception cref="InvalidOperationException"/>
     public static IEnumerable<string> EnumerateFiles(string directory)
     {
-        IntPtr ptr = physfs.PHYSFS_enumerateFiles(directory);
-        IntPtr files = ptr;
+        IntPtr files = physfs.PHYSFS_enumerateFiles(directory);
+        IntPtr i = files;
         Assert($"Enumerating files within {directory}", files == IntPtr.Zero, false);
 
         while (true)
         {
-            IntPtr file = Marshal.ReadIntPtr(files);
+            IntPtr file = Marshal.ReadIntPtr(i);
             if (file == IntPtr.Zero) break;
 
             yield return Marshal.PtrToStringUTF8(file)!;
-            files += IntPtr.Size;
+            i += IntPtr.Size;
         }
 
-        physfs.PHYSFS_freeList(ptr);
+        physfs.PHYSFS_freeList(files);
     }
 
     /// <summary>
