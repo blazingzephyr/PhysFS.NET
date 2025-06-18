@@ -3,5 +3,33 @@ git submodule update --init --recursive
 sleep 1
 
 if ! [ -d "physfs/build" ]; then
-    cmake -S "physfs" -B "physfs/build" -G "Visual Studio 17 2022" -A "x64" -DCMAKE_CONFIGURATION_TYPES="Debug;Release" -DPHYSFS_DISABLE_INSTALL=ON -DPHYSFS_BUILD_STATIC=OFF
+    cmake -S "physfs" -B "physfs/build/Win32" -G "Visual Studio 17 2022" -A "Win32" \
+        -DCMAKE_CONFIGURATION_TYPES="Debug;Release" \
+        -DPHYSFS_DISABLE_INSTALL=ON \
+        -DPHYSFS_BUILD_STATIC=OFF
+
+    cmake -S "physfs" -B "physfs/build/x64" -G "Visual Studio 17 2022" -A "x64" \
+        -DCMAKE_CONFIGURATION_TYPES="Debug;Release" \
+        -DPHYSFS_DISABLE_INSTALL=ON \
+        -DPHYSFS_BUILD_STATIC=OFF
+
+    cmake -S "physfs" -B "physfs/build/armeabi-v7a" -G "Visual Studio 17 2022" -A "ARM" \
+        -DCMAKE_CONFIGURATION_TYPES="Debug;Release" \
+        -DPHYSFS_DISABLE_INSTALL=ON \
+        -DPHYSFS_BUILD_STATIC=OFF \
+        -DCMAKE_SYSTEM_NAME=Android \
+        -DCMAKE_SYSTEM_VERSION=21 \
+        -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a \
+        -DCMAKE_ANDROID_NDK="C:/Program Files (x86)/Android/AndroidNDK/android-ndk-r23c" \
+        -DCMAKE_ANDROID_STL_TYPE=c++_shared
+
+    cmake -S "physfs" -B "physfs/build/arm64-v8a" -G "Visual Studio 17 2022" -A "ARM64" \
+        -DCMAKE_CONFIGURATION_TYPES="Debug;Release" \
+        -DPHYSFS_DISABLE_INSTALL=ON \
+        -DPHYSFS_BUILD_STATIC=OFF \
+        -DCMAKE_SYSTEM_NAME=Android \
+        -DCMAKE_SYSTEM_VERSION=21 \
+        -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+        -DCMAKE_ANDROID_NDK="C:/Program Files (x86)/Android/AndroidNDK/android-ndk-r23c" \
+        -DCMAKE_ANDROID_STL_TYPE=c++_shared
 fi

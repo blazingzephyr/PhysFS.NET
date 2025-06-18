@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsTrimmable>true</IsTrimmable>
+    <_AndroidNdkDirectory>C:/Program Files (x86)/Android/AndroidNDK/android-ndk-r23c</_AndroidNdkDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\**\*" Link="src\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\physfs\build\armeabi-v7a\physfs.vcxproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\physfs\build\arm64-v8a\physfs.vcxproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidNativeLibrary Include="$(_AndroidNdkDirectory)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/arm-linux-androideabi/libc++_shared.so">
+      <Abi>armeabi-v7a</Abi>
+    </AndroidNativeLibrary>
+
+    <AndroidNativeLibrary Include="$(_AndroidNdkDirectory)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so">
+      <Abi>arm64-v8a</Abi>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidNativeLibrary Include="../physfs/build/armeabi-v7a/$(Configuration)/libphysfs.so">
+      <Abi>armeabi-v7a</Abi>
+    </AndroidNativeLibrary>
+
+    <AndroidNativeLibrary Include="../physfs/build/arm64-v8a/$(Configuration)/libphysfs.so">
+      <Abi>arm64-v8a</Abi>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+</Project>

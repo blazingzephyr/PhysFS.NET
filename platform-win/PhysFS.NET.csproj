@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Platforms>x86;x64</Platforms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PhysFsPlatform Condition="'$(Platform)' == 'x64'">x64</PhysFsPlatform>
+    <PhysFsPlatform Condition="'$(PhysFsPlatform)' == ''">Win32</PhysFsPlatform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\**\*" Link="src\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\physfs\build\$(PhysFsPlatform)\physfs.vcxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <_TransitiveItemsToCopyToOutputDirectory Include="..\physfs\build\$(PhysFsPlatform)\$(Configuration)\physfs.dll">
+      <TargetPath>physfs.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </_TransitiveItemsToCopyToOutputDirectory>
+  </ItemGroup>
+</Project>
