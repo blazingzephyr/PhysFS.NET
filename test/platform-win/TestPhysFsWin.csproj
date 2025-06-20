@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Platforms>x86;x64</Platforms>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Icculus.PhysFs.NET</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PublishAot>True</PublishAot>
+	<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\**\*" Link="src\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\platform-win\PhysFS.NET.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+	android:alignmentMode="alignBounds"
+	android:orientation="vertical">
+
+	<TextView
+		android:id="@+id/command_line"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerInParent="true"
+		android:layout_marginLeft="20px"
+		android:inputType="textLongMessage"
+		android:editable="true"
+		android:focusableInTouchMode="true"
+		android:hint="@string/input_field"/>
+	<GridLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:alignmentMode="alignBounds"
+		android:orientation="horizontal">
+		<Button
+			android:id="@+id/run_command"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/button"/>
+		<Button
+			android:id="@+id/clear_log"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/clear"/>
+	</GridLayout>
+	<TextView
+		android:id="@+id/output_field"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_centerInParent="true"
+		android:layout_marginLeft="20px"
+		android:inputType="textMultiLine"
+		android:editable="false"
+		android:focusableInTouchMode="false"
+		android:scrollbars="vertical"/>
+</GridLayout>

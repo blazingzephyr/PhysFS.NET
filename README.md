@@ -1,81 +1,85 @@
 # PhysFS.NET
-### Lightweight, high-level API + Native method bindings for [physfs](https://github.com/icculus/physfs)
-While I was looking for a C# wrapper for Icculus' physfs (a portable, flexible file i/o abstraction), I noticed my options were limited, as some of the bindings were outdated or lacked much needed convenience. While I was writing my own wrapper for personal use, it turned out a lot bigger than I had expected, and included several quality-of-life features, so I decided to publicly release it in case someone in the community needs as much as I did.
+### Extensive, high-level API wrapper for [physfs](https://github.com/icculus/physfs).
+A simple-to-use C# wrapper for Icculus' physfs (a portable, flexible file i/o abstraction).
+Currently supports builds for Windows and Android. Adding support for other platforms is considered in the future.
 
-## Why use this API over others (perhaps even yours)
-* Lightweight, while including all of the functionality a regular user might require;
-* Includes original author's comments on the implementation details, as well as my own thoughts and notes here and there;
-* Automatically processes errors, if any are encountered, and also raises exceptions with descriptive messages;
-* Provides console and file logs during ``DEBUG`` compile mode.
+## Advantages of using this wrapper over your own
+* Lightweight, you do not need to keep an extensive system of dependencies or rely on other packages for this to work;
+* Extensive, covers the entire API (even the hardcore stuff you most likely won't need ever);
+* Includes the entirety of the author's comments with additions and fixes where needed;
+* Automatically handles any underlying errors and raises exceptions;
+* Android support included;
+* Tested with NativeAOT for Windows builds.
 
 ## How do I use this?
-Just clone the repository or put it as your repository's submodule and add it as your C# project's dependency.
+Just clone the repository or put it as your repository's submodule and add the Windows/Android project as a dependency.
 
 ⚠️Warning! Important!⚠️<br/>
-Don't forget to reference ``physfs`` project (in relation to PhysFS.NET) with the following properties so the DLLs will be automatically copied to your application's output directory:
-```xml
-<ProjectReference Include="\physfs\build\physfs.vcxproj">
-	<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-	<OutputItemType>Content</OutputItemType>
-	<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-</ProjectReference>
-```
+When publishing with NativeAOT, you will have to copy the compiled native library yourself, otherwise the application crashes!
 
 ## Simple Example
 ```cs
 // First of all, initialize the library!
-PhysFS.Init();
+PhysicsFS.Init();
 
 // This will set basic values, for example, the writing directory
 // will be set to "AppData/Roaming/blazingzephyr/PhysFS.NET".
-PhysFS.SetSaneConfig("blazingzephyr", "PhysFS.NET", ".zip", false, true);
+PhysicsFS.SetSaneConfig("blazingzephyr", "PhysFS.NET", "ZIP", false, true);
 
 // This will add the application's directory as an available search path.
-PhysFS.Mount(PhysFS.BasePath, false);
+PhysicsFS.Mount(PhysicsFS.BaseDir!, "/", true);
 
 // This is probably expected to be in the application's directory.
 // Or could be in the writing dir.
-FileSystemObject file = PhysFS.OpenFile("file.txt", FileSystemObjectAccess.Read);
+// PhysFsFileHandle implements disposable pattern, so you don't need to call Close.
+using (PhysFsFileHandle file = PhysicsFS.OpenRead("file.txt"))
+{
+    // Wraps over PhysicsFS.ReadBytes for convenience.
+    byte[] buffer = PhysFsUtil.ReadAllBytes(file);
 
-// Equivalent to PhysFS.ReadBytes(file) (calls it internally).
-// Use whichever one you prefer.
-byte[] fileContents = file.ReadBytes();
+    // PhysFS uses UTF8 encoding!
+    string fileContents = Encoding.UTF8.GetString(buffer);
 
-// Do whatever you need to with the contents.
-Console.WriteLine(fileContents.Length);
+    // Do whatever you need to with the contents.
+    Console.WriteLine(fileContents);
 
-// Alternatively, you can use file.ReadToStream() or PhysFs.ReadToStream(file).
-// UnmanagedMemoryStream stream = file.ReadToStream();
-// *process the stream...*
-// stream.Close();
-
-// Equivalent to PhysFS.CloseFile(file).
-file.Dispose();
+    // Alternatively, you can use PhysFsUtil.ReadToBuffer.
+    // using (SafeHGlobalBuffer buffer = PhysFsUtil.ReadToBuffer(file))
+    // using (var stream = new UnmanagedMemoryStream(buffer, 0, (long)buffer.ByteLength))
+    // using (StreamReader reader = new StreamReader(stream, leaveOpen: false))
+    // {
+    //  string fileContents = reader.ReadToEnd();
+    //  Console.WriteLine(fileContents);
+    //  testdeps.Dispose();
+    // }
+}
 
 // This will open a file for writing.
 // If the file exists, it will be truncated (emptied).
 // if the file doesn't exist, it will be created in the write dir.
-file = PhysFS.OpenFile("new.txt", FileSystemObjectAccess.Truncate);
+using (PhysFsFileHandle file = PhysicsFS.OpenWrite("new.txt"))
+{
+    // PhysFS uses UTF8 encoding!
+    byte[] content = Encoding.UTF8.GetBytes("Sample text");
 
-// PhysFS uses UTF8 encoding!
-byte[] content = Encoding.UTF8.GetBytes("Sample text");
-
-// This will write bytes to a file.
-// You can also use this with FileSystemObjectAccess.Append
-// to instead append contents to a file.
-file.WriteBytes(content);
-
-// Close the file.
-file.Dispose();
+    // This will write bytes to a file.
+    // You can also use this with FileSystemObjectAccess.Append
+    // to instead append contents to a file.
+    // 
+    // Wraps over PhysicsFS.WriteBytes for convenience.
+    PhysFsUtil.WriteAllBytes(file, content);
+}
 
 // You can set it to something meaningless if you don't need it.
 int data = 0;
 
 // This will list every file found in "/".
-PhysFS.Enumerate("/", EnumerateCallback, ref data);
+//
+// There is an overload which does not take any callback data in case you don't need it!
+PhysicsFS.Enumerate("/", EnumerateCallback, ref data);
 
 // Our callback for enumerating files.
-static EnumerateCallbackResult EnumerateCallback(ref int data,
+static PhysFsEnumerateCallbackResult EnumerateCallback(ref int data,
 string directory, string file)
 {
     // But you can also use it for writing data from within.
@@ -85,59 +89,50 @@ string directory, string file)
     // Open files, for example.
     Console.WriteLine($"{directory}{file}");
 
-    if (data == 10)
+    if (data == 6)
     {
         // This will signal that we should stop on the 10th file found.
-        return EnumerateCallbackResult.Stop;
+        return PhysFsEnumerateCallbackResult.Stop;
     }
 
     // Signals that we should continue looking for files.
-    return EnumerateCallbackResult.Continue;
+    return PhysFsEnumerateCallbackResult.OK;
 }
 
 // Don't forget to deinitialize PhysFS when you're done!
-PhysFS.Deinit();
+PhysicsFS.Deinit();
 ```
-This program will generate the following output:
+This program generates the following output:
 ```
-[01.05.2025 11:37:56::8540] [PhysFS] SUCC Initializing PhysFS.
-[01.05.2025 11:37:56::8689] [PhysFS] SUCC Setting default config for blazingzephyr, PhysFS.NET with CD-ROMS support set to False, default archive extension set to .zip and prepend archives set to True.
-[01.05.2025 11:37:56::8725] [PhysFS] SUCC Adding D:\WTRedux\WTRedux\bin\x64\Debug\net8.0\ to search paths to /.
-[01.05.2025 11:37:56::8778] [PhysFS] SUCC Opening file.txt for Read.
-[01.05.2025 11:37:56::8804] [PhysFS] SUCC Getting the file statistics of file.txt.
-[01.05.2025 11:37:56::8835] [PhysFS] SUCC Reading 4178 bytes from file.txt.
-4178
-[01.05.2025 11:37:56::8869] [PhysFS] SUCC Closing file.txt.
-[01.05.2025 11:37:56::8878] [PhysFS] SUCC Opening new.txt for Truncate.
-[01.05.2025 11:37:56::8881] [PhysFS] SUCC Getting the file statistics of new.txt.
-[01.05.2025 11:37:56::8889] [PhysFS] SUCC Writing 11 bytes to new.txt.
-[01.05.2025 11:37:56::8918] [PhysFS] SUCC Closing new.txt.
+"Content inside file.txt"
 /new.txt
-/newWrite.png
-/1.jpg
-/1.zip
-/983445408413.mp4
-/FAudio.dll
 /file.txt
-/FNA.dll
-/FNA.dll.config
-/FNA.pdb
-[01.05.2025 11:37:56::9000] [PhysFS] SUCC Enumerating files in /.
-[01.05.2025 11:37:56::9007] [PhysFS] SUCC Deinitializing PhysFS.
+/physfs.dll
+/PhysFS.NET.dll
+/PhysFS.NET.pdb
+/TestPhysFsWin.deps.json
 ```
 
-## When to use low-level bindings.
-``Icculus.PhysFS.NET.PhysFS`` class includes all of the essential functionality of physfs, so diving deeper into the internals is not required from the user at all. However, if you need to call the native methods directly or if you want to write your own wrapper, you can use the fucntionality provided by the ``Internals`` namespace.
+## Detailed Example
+The bindings also include a test application in the [/test](https://github.com/blazingzephyr/PhysFS.NET/tree/main/test) subfolder for both Windows and Android.
+Build it if you want more insights on how to use the library.
+There is also [an unfinished custom Archiver example](https://github.com/blazingzephyr/PhysFS.NET/tree/main/test/src/ArchiverExample.cs) if you want to mess with it.
 
-## What's left to cover?
-Outdated and deprecated functionality prior to PhysFS 2.1 was deliberately left uncovered. However, there is still some functionality left untouched due to uncertainties or time constraints. Most of it is either way too in-depth and would be problematic to recreate in C# (such as custom allocators or archivers) or simply not needed (reading and writing single bytes of data), or C# provides the similar functionality already (such as encoding conversion and other string operations). You can find out more about what could be added later in the [issues](https://github.com/blazingzephyr/PhysFS.NET/issues) tab.
+## ``old`` branch
+There is [an old version of the wrapper](https://github.com/blazingzephyr/PhysFS.NET/tree/old) available for those who need it.
+It includes an entirely different API and does not contain some functionality you might need. Outdated and deprecated functionality prior to PhysFS 2.1 was deliberately left uncovered there. Some functionality was left untouched due to uncertainties or time constraints.
+Most of it was either way too in-depth and was problematic to recreate in C# (such as custom allocators or archivers) or simply not needed (reading and writing single bytes of data), or C# provided similar functionality already (such as encoding conversion and string comparison).
+However, all of the functionality previously not included is available now and I even added most of the utilities from the old API in the current version.
+
+### When to use low-level bindings
+The API provides any functionality you might need, but if you need to call the native methods directly or if you want to write your own wrapper, you can include the [``old`` branch](https://github.com/blazingzephyr/PhysFS.NET/tree/old) and use the functionality provided by the ``Internals`` namespace. That branch will not be updated.
 
 ## How can I contribute?
-If you encountered an issue while using the bindings, open an issue, or open a pull request if you want to merge some new functionality you added. You can also DM me on Discord (username: blazingzephyr). I would gladly discuss your contributions to the project!
+If you encountered a problem while using the bindings, open an issue, or open a pull request if you want to merge some new functionality. You can also DM me on Discord (username: blazingzephyr). I would gladly discuss your contributions to the project!
 
 ![line](https://capsule-render.vercel.app/api?type=rect&color=gradient&height=2)
 
 [![Avatar](https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/119159668?v=4&h=96&w=96&fit=cover&mask=circle&maxage=7d)](https://github.com/blazingzephyr)<br>
 Provided by [@blazingzephyr](https://github.com/blazingzephyr)<br>
-Last updated: Jan 06, 2025.
+Last updated: Jun 30, 2025.
 [![GitHub](https://images.weserv.nl/?url=https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png&h=15&w=15&fit=none&mask=circle&maxage=7d)](https://github.com/blazingzephyr/PhysFS.NET/commits/main)

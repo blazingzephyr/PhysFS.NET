@@ -1,24 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0-android</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
-    <RootNamespace>Icculus.PhysFs.NET</RootNamespace>
+    <RootNamespace>Icculus.PhysFS.NET</RootNamespace>
+    <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsTrimmable>true</IsTrimmable>
-    <_AndroidNdkDirectory>C:/Program Files (x86)/Android/AndroidNDK/android-ndk-r23c</_AndroidNdkDirectory>
+    <ApplicationId>com.icculus.physfstest</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <!--
+      Enables trim analyzers and full trimming during Release mode.
+      To learn more, see: https://learn.microsoft.com/dotnet/core/deploying/trimming/trimming-options#trimming-granularity
+    -->
+    <TrimMode>full</TrimMode>
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <Compile Include="..\src\**\*" Link="src\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\physfs\build\armeabi-v7a\physfs.vcxproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\physfs\build\arm64-v8a\physfs.vcxproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\platform-android\PhysFS.NET.csproj" />
   </ItemGroup>
-
+	
   <ItemGroup>
     <AndroidNativeLibrary Include="$(_AndroidNdkDirectory)/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/arm-linux-androideabi/libc++_shared.so">
       <Abi>armeabi-v7a</Abi>
