@@ -1,5 +1,5 @@
 ﻿
-namespace Icculus.PhysFS.NET.Internals;
+namespace Old.Icculus.PhysFS.NET.Internals;
 
 [NativeMarshalling(typeof(SafeHandleMarshaller<FileHandle>))]
 public class FileHandle() : SafeHandle(IntPtr.Zero, true)

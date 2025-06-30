@@ -1,5 +1,28 @@
 ﻿
-namespace Icculus.PhysFS.NET.Internals;
+namespace Old.Icculus.PhysFS.NET.Internals;
+
+//public static unsafe partial class physfs
+//{
+//    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Interop.LibraryImportGenerator", "8.0.12.6609")]
+//    [global::System.Runtime.CompilerServices.SkipLocalsInitAttribute]
+//    public static partial void PHYSFS_init()
+//    {
+//        nint __retVal_native;
+//        {
+//            __retVal_native = __PInvoke();
+//        }
+
+//        if (__retVal_native == 0)
+//        {
+//            throw new Exception();
+//        }
+
+//        // Local P/Invoke
+//        [global::System.Runtime.InteropServices.DllImportAttribute("physfs.dll", EntryPoint = "PHYSFS_init", ExactSpelling = true)]
+//        [global::System.Runtime.InteropServices.UnmanagedCallConvAttribute(CallConvs = new global::System.Type[] { typeof(global::System.Runtime.CompilerServices.CallConvStdcall) })]
+//        static extern unsafe nint __PInvoke();
+//    }
+//}
 
 public static unsafe partial class physfs
 {
@@ -14,7 +37,7 @@ public static unsafe partial class physfs
 
     [LibraryImport("physfs.dll")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
-    [return: MarshalAs(UnmanagedType.I1)]
+    [return: MarshalUsing(typeof(VoidMarshaller))]
     public static partial bool PHYSFS_deinit();
 
     [LibraryImport("physfs.dll")]

@@ -1,5 +1,5 @@
 ﻿
-namespace Icculus.PhysFS.NET.Internals;
+namespace Old.Icculus.PhysFS.NET.Internals;
 
 public static class ExceptionUtility
 {

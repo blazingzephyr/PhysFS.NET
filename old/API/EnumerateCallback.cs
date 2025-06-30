@@ -1,5 +1,5 @@
 ﻿
-namespace Icculus.PhysFS.NET;
+namespace Old.Icculus.PhysFS.NET;
 
 /// <summary>
 /// Possible return values from <see cref="EnumerateCallback{T}" />.<br/>

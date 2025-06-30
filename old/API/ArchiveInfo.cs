@@ -1,5 +1,5 @@
 ﻿
-namespace Icculus.PhysFS.NET;
+namespace Old.Icculus.PhysFS.NET;
 
 /// <summary>
 /// Information on various PhysicsFS-supported archives.

@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "PhysFsSourceGenerator": {
+      "commandName": "Project"
+    },
+    "Roslyn Profile": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\PhysFS.NET\\PhysFS.NET.csproj"
+    }
+  }
+}

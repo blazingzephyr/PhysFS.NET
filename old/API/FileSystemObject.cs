@@ -1,5 +1,5 @@
 ﻿
-namespace Icculus.PhysFS.NET;
+namespace Old.Icculus.PhysFS.NET;
 
 /// <summary>
 /// Access mode of the file system object.

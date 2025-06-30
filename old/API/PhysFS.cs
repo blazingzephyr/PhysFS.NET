@@ -1,5 +1,5 @@
 ﻿
-namespace Icculus.PhysFS.NET;
+namespace Old.Icculus.PhysFS.NET;
 
 /// <summary>
 /// PhysicsFS<br/>
@@ -123,7 +123,7 @@ public static class PhysFS
     /// <exception cref="InvalidOperationException"/>
     public static void Init(string? arg = null)
     {
-        Assert("Initializing PhysFS", !physfs.PHYSFS_init(arg));
+        //Assert("Initializing PhysFS", !physfs.PHYSFS_init(arg));
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public static class PhysFS
     /// <exception cref="InvalidOperationException"/>
     public static void Deinit()
     {
-        Assert("Deinitializing PhysFS", !physfs.PHYSFS_deinit());
+        // Assert("Deinitializing PhysFS", !physfs.PHYSFS_deinit());
     }
 
     /// <summary>
